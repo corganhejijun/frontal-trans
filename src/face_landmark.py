@@ -59,6 +59,8 @@ class FaceMarks:
             for j in range(img.shape[1]):
                 x = int(math.floor(imgMlsMap[i][j][0]))
                 y = int(math.floor(imgMlsMap[i][j][1]))
+                if y >= transImg.shape[0] or x >= transImg.shape[1]:
+                    continue
                 transImg[y, x] = img[i, j]
         return transImg
 
