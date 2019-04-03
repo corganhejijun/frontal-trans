@@ -22,4 +22,4 @@ for index, subFolder in enumerate(os.listdir(DATASET)):
         imgPath = os.path.join(subFolderPath, imgFile)
         img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
         transImg = landmark.landmark_transform(img)
-        misc.imsave(os.path.join(outPath, imgFile), transImg)
+        misc.imsave(os.path.join(destDir, imgFile), transImg)
