@@ -8,6 +8,7 @@ from scipy import misc
 destDir = os.path.join(Constant.ROOT_PATH, "datasets", "lfw_trans")
 DATASET = os.path.join(Constant.ROOT_PATH, "datasets", "lfw")
 landmark = Landmark()
+OUT_SIZE = 256
 
 if not os.path.isdir(destDir):
     os.mkdir(destDir)
@@ -22,4 +23,5 @@ for index, subFolder in enumerate(os.listdir(DATASET)):
         imgPath = os.path.join(subFolderPath, imgFile)
         img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
         transImg = landmark.landmark_transform(img)
-        misc.imsave(os.path.join(destDir, imgFile), transImg)
+        resizeImg = misc.imresize(transImg, (OUT_SIZE, OUT_SIZE))
+        misc.imsave(os.path.join(destDir, imgFile), resizeImg)
