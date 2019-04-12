@@ -19,17 +19,10 @@ class FaceMarks:
         self.eignCenter = self.getCenter(self.eignShape)
 
     def getMarkPoints(self, shape):
-        LANDMARK_LIST = [0, 2, 4,   # right face
-                            8,      # jaw
-                         12, 14, 16,# left face
-                         36, 39,    # right eye
-                         42, 45,    # left eye
-                         31, 35,    # nose
-                         49, 55]    # mouth
-        points = np.zeros((len(LANDMARK_LIST), 2))
-        for index, i in enumerate(LANDMARK_LIST):
-            points[index][0] = shape.part(i).x
-            points[index][1] = shape.part(i).y
+        points = np.zeros((shape.num_parts, 2))
+        for i in range(shape.num_parts):
+            points[i][0] = shape.part(i).x
+            points[i][1] = shape.part(i).y
         return points
 
     def getCenter(self, shape):
