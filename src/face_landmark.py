@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 from .Constant import ROOT_PATH
 import os
-from .MovingLSQ import MovingLSQ
 import numpy as np
 import math
 import cv2
 import dlib
+from .TriangleTransform import Transform
 
 class FaceMarks:
     def __init__(self):
@@ -177,15 +177,15 @@ class FaceMarks:
         # Transform position relative to nose center point
         srcPoints = self.getMarkPoints(shape)
         destPoints = self.getRelativePostion(self.getCenter(shape))
-        solver = MovingLSQ(srcPoints, destPoints)
+        solver = Transform(srcPoints, destPoints, 
+                    (0, 0, img.shape[1], img.shape[0]), (0, 0, img.shape[1], img.shape[0]))
 
-        imgIdx = np.zeros((faceImg.shape[0] * faceImg.shape[1], 2))
-        for i in range(faceImg.shape[0]):
-            for j in range(faceImg.shape[1]):
-                imgIdx[i * faceImg.shape[1] + j] = [j, i]
-        imgMls = solver.Run_Rigid(imgIdx)
-        imgMlsMap = imgMls.reshape((faceImg.shape[0], faceImg.shape[1], 2))
-        transImg = self.fillTransImg(faceImg, imgMlsMap)
+        imgIdx = np.zeros((img.shape[0], img.shape[1], 2))
+        for i in range(img.shape[0]):
+            for j in range(img.shape[1]):
+                imgIdx[i, j] = [j, i]
+        imgMap = solver.Run(imgIdx)
+        transImg = self.fillTransImg(img, imgMap)
         return self.square(transImg)
 
     def getRelativePostion(self, center):
