@@ -23,5 +23,7 @@ for index, subFolder in enumerate(os.listdir(DATASET)):
         imgPath = os.path.join(subFolderPath, imgFile)
         img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
         transImg = landmark.landmark_transform(img)
+        if transImg is None:
+            print("transform failed: file %s has no face" % file)
         resizeImg = misc.imresize(transImg, (OUT_SIZE, OUT_SIZE))
         misc.imsave(os.path.join(destDir, imgFile), resizeImg)

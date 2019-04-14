@@ -8,14 +8,13 @@ class Transform:
             subdiv.insert((pointList[i][0], pointList[i][1]))
         return subdiv.getTriangleList()
 
-    def __init__(self, src, dst, srcRect, dstRect):
+    def __init__(self, src, dst, srcRect):
         # Both src and dst are N x 2 numpy array, they are labeled by user
         [h, w] = src.shape
         self._label_num = h
         self._src = src
         self._dst = dst
         self._srcRect = srcRect
-        self._dstRect = dstRect
 
     def insideRect(self, point, rect):
         if point[0] < rect[0]:
@@ -60,26 +59,26 @@ class Transform:
     def getCorrepondingDst(self, srcTriangle):
         def getIndex(pt):
             for i, p in enumerate(self._src):
-                if p[0] - pt[0] < 0.0001 and p[1] - pt[1] < 0.0001:
+                if abs(p[0] - pt[0]) < 0.0001 and abs(p[1] - pt[1]) < 0.0001:
                     return i
             return None
         pt1 = (srcTriangle[0], srcTriangle[1])
         index1 = getIndex(pt1)
-        if index1 == None:
+        if index1 is None:
             return None
         pt2 = (srcTriangle[2], srcTriangle[3])
         index2 = getIndex(pt2)
-        if index2 == None:
+        if index2 is None:
             return None
         pt3 = (srcTriangle[4], srcTriangle[5])
         index3 = getIndex(pt3)
-        if index3 == None:
+        if index3 is None:
             return None
         return (self._dst[index1][0], self._dst[index1][1],
                 self._dst[index2][0], self._dst[index2][1],
                 self._dst[index3][0], self._dst[index3][1])
 
-    def Run(self, srcPoints):
+    def Run(self, srcPoints, img):
         src_triangleList = self.getTriangleList(self._srcRect, self._src)
         dstPoints = srcPoints.copy()
         for i, t in enumerate(src_triangleList):
@@ -94,7 +93,7 @@ class Transform:
                 continue
             srcTriangle = src_triangleList[i]
             dstTriangle = self.getCorrepondingDst(srcTriangle)
-            if dstTriangle == None:
+            if dstTriangle is None:
                 continue
             xmax = max(pt1[0], pt2[0], pt3[0])
             xmin = min(pt1[0], pt2[0], pt3[0])
@@ -106,6 +105,5 @@ class Transform:
                     if self.insideTriangle(pt1, pt2, pt3, point):
                         [xt, yt, _]= self.getDstPoint(point, srcTriangle, dstTriangle)
                         dstPoints[y, x] = (xt, yt)
-                        continue
         return dstPoints
                 

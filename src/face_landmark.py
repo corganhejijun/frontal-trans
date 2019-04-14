@@ -45,9 +45,18 @@ class FaceMarks:
                 yMax = shape.part(i).y
         # add forehead
         yMin -= math.floor((yMax-yMin)/2)
-        if yMin < 0:
-            yMin = 0
-        return img[yMin:yMax, xMin:xMax, :]
+        # add ears
+        xMin -= math.floor((xMax-xMin)/6)
+        xMax += math.floor((xMax-xMin)/6)
+        if yMin < 1:
+            yMin = 1
+        if xMin < 1:
+            xMin = 1
+        if yMax > len(img) - 1:
+            yMax = len(img) - 1
+        if xMax > len(img[0]) - 1:
+            xMax = len(img[0]) - 1
+        return img[yMin-1:yMax+1, xMin-1:xMax+1, :], xMin-1, yMin+1
 
     def getNearbyPixel(self, flag, x, y):
         index = 0
@@ -74,15 +83,15 @@ class FaceMarks:
                     return x - i, y - index
         return None, None
 
-    def getMargin(self, mlsMap):
+    def getMargin(self, transMap):
         left = 0
-        right = mlsMap.shape[1]
+        right = transMap.shape[1]
         top = 0
-        bottom = mlsMap.shape[0]
-        for i in range(mlsMap.shape[0]):
-            for j in range(mlsMap.shape[1]):
-                x = int(math.floor(mlsMap[i][j][0]))
-                y = int(math.floor(mlsMap[i][j][1]))
+        bottom = transMap.shape[0]
+        for i in range(transMap.shape[0]):
+            for j in range(transMap.shape[1]):
+                x = int(math.floor(transMap[i][j][0]))
+                y = int(math.floor(transMap[i][j][1]))
                 if left > x:
                     left = x
                 if right < x:
@@ -91,8 +100,8 @@ class FaceMarks:
                     top = y
                 if bottom < y:
                     bottom = y
-                x = int(math.ceil(mlsMap[i][j][0]))
-                y = int(math.ceil(mlsMap[i][j][1]))
+                x = int(math.ceil(transMap[i][j][0]))
+                y = int(math.ceil(transMap[i][j][1]))
                 if left > x:
                     left = x
                 if right < x:
@@ -101,33 +110,35 @@ class FaceMarks:
                     top = y
                 if bottom < y:
                     bottom = y
-        return 0-left, right-mlsMap.shape[1], 0-top, bottom-mlsMap.shape[0]
+        return 0-left, right-transMap.shape[1], 0-top, bottom-transMap.shape[0]
     
-    def fillTransImg(self, img, mlsMap):
-        leftMargin, rightMargin, topMargin, bottomMargin = self.getMargin(mlsMap)
+    def fillTransImg(self, img, transMap):
+        leftMargin, rightMargin, topMargin, bottomMargin = self.getMargin(transMap)
         imgWidth = img.shape[1] + leftMargin + rightMargin
         imgHeight = img.shape[0] + topMargin + bottomMargin
         transImg = np.zeros((imgHeight, imgWidth, 3))
         transFlag = np.zeros((imgHeight, imgWidth))
-        for i in range(mlsMap.shape[0]):
-            for j in range(mlsMap.shape[1]):
-                x = int(math.floor(mlsMap[i][j][0])) + leftMargin
-                y = int(math.floor(mlsMap[i][j][1])) + topMargin
+        for i in range(transMap.shape[0]):
+            for j in range(transMap.shape[1]):
+                x = int(math.floor(transMap[i][j][0])) + leftMargin
+                y = int(math.floor(transMap[i][j][1])) + topMargin
                 if y >= imgHeight or x >= imgWidth:
                     continue
                 if transFlag[y, x] == 0:
                     transImg[y, x] = img[i, j]
                     transFlag[y, x] = 1;
                 else:
+                    continue
                     transImg[y, x] = (transImg[y, x] + img[i, j])/2
-                x = int(math.ceil(mlsMap[i][j][0])) + leftMargin
-                y = int(math.ceil(mlsMap[i][j][1])) + topMargin
+                x = int(math.ceil(transMap[i][j][0])) + leftMargin
+                y = int(math.ceil(transMap[i][j][1])) + topMargin
                 if y >= imgHeight or x >= imgWidth:
                     continue
                 if transFlag[y, x] == 0:
                     transImg[y, x] = img[i, j]
                     transFlag[y, x] = 1;
                 else:
+                    continue
                     transImg[y, x] = (transImg[y, x] + img[i, j])/2
         # Fill the holes
         for i in range(imgHeight):
@@ -135,7 +146,7 @@ class FaceMarks:
                 if transFlag[i, j] > 0:
                     continue
                 x, y= self.getNearbyPixel(transFlag, j, i)
-                if x == None:
+                if x is None:
                     transImg[i, j] = img[i, j]
                 else:
                     transImg[i, j] = transImg[y, x]
@@ -148,7 +159,10 @@ class FaceMarks:
             squareImg = np.zeros((width, width, 3))
             top = math.ceil((width - height)/2)
             bottom = math.floor((width - height)/2)
-            squareImg[top:-bottom,:,:] = img
+            if bottom == 0:
+                squareImg[top:squareImg.shape[0],:,:] = img
+            else:
+                squareImg[top:-bottom,:,:] = img
             for i in range(top):
                 squareImg[i,:,:] = img[0,:,:]
             for i in range(bottom):
@@ -158,7 +172,10 @@ class FaceMarks:
             squareImg = np.zeros((height, height, 3))
             left = math.ceil((height-width)/2)
             right = math.floor((height-width)/2)
-            squareImg[:, left:-right, :] = img
+            if right == 0:
+                squareImg[:, left:squareImg.shape[1], :] = img
+            else: 
+                squareImg[:, left:-right, :] = img
             for i in range(left):
                 squareImg[:,i,:] = img[:,0,:]
             for i in range(right):
@@ -169,23 +186,26 @@ class FaceMarks:
     def landmark_transform(self, img):
         dets = self.detector(img, 1)
         if (len(dets) == 0):
-            print("file %s has no face" % file)
             return None
         shape = self.shapePredictor(img, dets[0])
-        faceImg = self.getFaceArea(img, shape)
+        faceImg, left, top = self.getFaceArea(img, shape)
 
         # Transform position relative to nose center point
         srcPoints = self.getMarkPoints(shape)
         destPoints = self.getRelativePostion(self.getCenter(shape))
-        solver = Transform(srcPoints, destPoints, 
-                    (0, 0, img.shape[1], img.shape[0]), (0, 0, img.shape[1], img.shape[0]))
+        for i in range(srcPoints.shape[0]):
+            srcPoints[i][0] -= left
+            srcPoints[i][1] -= top
+            destPoints[i][0] -= left
+            destPoints[i][1] -= top
+        solver = Transform(srcPoints, destPoints, (0, 0, faceImg.shape[1], faceImg.shape[0]))
 
-        imgIdx = np.zeros((img.shape[0], img.shape[1], 2))
-        for i in range(img.shape[0]):
-            for j in range(img.shape[1]):
+        imgIdx = np.zeros((faceImg.shape[0], faceImg.shape[1], 2))
+        for i in range(faceImg.shape[0]):
+            for j in range(faceImg.shape[1]):
                 imgIdx[i, j] = [j, i]
-        imgMap = solver.Run(imgIdx)
-        transImg = self.fillTransImg(img, imgMap)
+        transMap = solver.Run(imgIdx, faceImg)
+        transImg = self.fillTransImg(faceImg, transMap)
         return self.square(transImg)
 
     def getRelativePostion(self, center):
