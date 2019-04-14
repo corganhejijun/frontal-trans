@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .Constant import ROOT_PATH
+from .Constant import *
 import os
 import numpy as np
 import math
@@ -8,7 +8,7 @@ import dlib
 from .TriangleTransform import Transform
 
 class FaceMarks:
-    def __init__(self):
+    def __init__(self, faceArea=FACE_AREA):
         self.SHAPE_MODEL = os.path.join(ROOT_PATH, "models", "shape_predictor_68_face_landmarks.dat")
         self.EIGEN_PATH = os.path.join(ROOT_PATH, "datasets", "eigen_face.jpg")
         self.eignImg = cv2.cvtColor(cv2.imread(self.EIGEN_PATH), cv2.COLOR_BGR2RGB)
@@ -17,6 +17,7 @@ class FaceMarks:
         self.eignShape = self.shapePredictor(self.eignImg, self.detector(self.eignImg, 1)[0])
         self.eignPoints = self.getMarkPoints(self.eignShape)
         self.eignCenter = self.getCenter(self.eignShape)
+        self.faceArea = faceArea
 
     def getMarkPoints(self, shape):
         points = np.zeros((shape.num_parts, 2))
@@ -29,7 +30,7 @@ class FaceMarks:
         NOSE_CENTER = 28
         return [shape.part(NOSE_CENTER).x, shape.part(NOSE_CENTER).y]
 
-    def getFaceArea(self, img, shape):
+    def getFaceArea(self, img, shape, srcPoints, dstPoints):
         xMin = len(img[0])
         xMax = 0
         yMin = len(img)
@@ -43,11 +44,29 @@ class FaceMarks:
                 yMin = shape.part(i).y
             if (shape.part(i).y > yMax):
                 yMax = shape.part(i).y
-        # add forehead
-        yMin -= math.floor((yMax-yMin)/2)
-        # add ears
-        xMin -= math.floor((xMax-xMin)/6)
-        xMax += math.floor((xMax-xMin)/6)
+        if self.faceArea == HEAD_AREA:
+            # add forehead
+            yMin -= math.floor((yMax-yMin)/2)
+            # add ears
+            xMin -= math.floor((xMax-xMin)/6)
+            xMax += math.floor((xMax-xMin)/6)
+        for i in range(srcPoints.shape[0]):
+            if xMin > srcPoints[i][0]:
+                xMin = srcPoints[i][0]
+            if xMax < srcPoints[i][0]:
+                xMax = srcPoints[i][0]
+            if xMin > dstPoints[i][0]:
+                xMin = dstPoints[i][0]
+            if xMax < dstPoints[i][0]:
+                xMax = dstPoints[i][0]
+            if yMin > srcPoints[i][1]:
+                yMin = srcPoints[i][1]
+            if yMax < srcPoints[i][1]:
+                yMax = srcPoints[i][1]
+            if yMin > dstPoints[i][1]:
+                yMin = dstPoints[i][1]
+            if yMax < dstPoints[i][1]:
+                yMax = dstPoints[i][1]
         if yMin < 1:
             yMin = 1
         if xMin < 1:
@@ -56,7 +75,7 @@ class FaceMarks:
             yMax = len(img) - 1
         if xMax > len(img[0]) - 1:
             xMax = len(img[0]) - 1
-        return img[yMin-1:yMax+1, xMin-1:xMax+1, :], xMin-1, yMin+1
+        return img[int(yMin)-1:int(yMax)+1, int(xMin)-1:int(xMax)+1, :], int(xMin)-1, int(yMin)-1
 
     def getNearbyPixel(self, flag, x, y):
         index = 0
@@ -188,11 +207,12 @@ class FaceMarks:
         if (len(dets) == 0):
             return None
         shape = self.shapePredictor(img, dets[0])
-        faceImg, left, top = self.getFaceArea(img, shape)
 
         # Transform position relative to nose center point
         srcPoints = self.getMarkPoints(shape)
         destPoints = self.getRelativePostion(self.getCenter(shape))
+
+        faceImg, left, top = self.getFaceArea(img, shape, srcPoints, destPoints)
         for i in range(srcPoints.shape[0]):
             srcPoints[i][0] -= left
             srcPoints[i][1] -= top
@@ -207,6 +227,23 @@ class FaceMarks:
         transMap = solver.Run(imgIdx, faceImg)
         transImg = self.fillTransImg(faceImg, transMap)
         return self.square(transImg)
+    
+    def copyFront(self, img):
+        dets = self.detector(img, 1)
+        if (len(dets) == 0):
+            return None
+        shape = self.shapePredictor(img, dets[0])
+        points = self.getMarkPoints(shape)
+        totalDistance = 0
+        for i in range(points.shape[0]):
+            distance = (abs(points[i][0] - self.eignPoints[i][0])
+                        + abs(points[i][1] - self.eignPoints[i][1]))
+            totalDistance += distance
+        if totalDistance > 100:
+            return None
+        faceImg = self.getFaceArea(img, shape, points, points)
+        return faceImg
+
 
     def getRelativePostion(self, center):
         destPoints = np.zeros((len(self.eignPoints), 2))
