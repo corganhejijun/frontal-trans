@@ -5,13 +5,18 @@ from src.face_landmark import FaceMarks as Landmark
 import cv2
 from scipy import misc
 
-destDir = os.path.join(Constant.ROOT_PATH, "datasets", "lfw_trans")
-DATASET = os.path.join(Constant.ROOT_PATH, "datasets", "lfw")
-landmark = Landmark(faceArea=Constant.HEAD_AREA)
+DATASET = "lfw"
+destDir = os.path.join(Constant.ROOT_PATH, "datasets", DATASET + "_trans")
+DATASET = os.path.join(Constant.ROOT_PATH, "datasets", DATASET)
+FRONT_DATA = os.path.join(Constant.ROOT_PATH, "datasets", DATASET + "_front")
+landmark = Landmark(faceArea=Constant.FACE_AREA)
 OUT_SIZE = 256
+REPLACE_OLD = False
 
 if not os.path.isdir(destDir):
     os.mkdir(destDir)
+if not os.path.isdir(FRONT_DATA):
+    os.mkdir(FRONT_DATA)
 
 totalLength = str(len(os.listdir(DATASET)))
 for index, subFolder in enumerate(os.listdir(DATASET)):
@@ -21,6 +26,8 @@ for index, subFolder in enumerate(os.listdir(DATASET)):
     for i, imgFile in enumerate(os.listdir(subFolderPath)):
         print("processing " + imgFile + " " + str(i+1) + " of total " + totalSubFile 
                 + " in subFolder " + subFolder + " " + str(index+1) + "/" + str(totalLength))
+        if not REPLACE_OLD and os.path.exists(os.path.join(destDir, imgFile)):
+            continue
         imgPath = os.path.join(subFolderPath, imgFile)
         img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
         frontImg = landmark.copyFront(img)
@@ -33,6 +40,5 @@ for index, subFolder in enumerate(os.listdir(DATASET)):
             misc.imsave(os.path.join(destDir, imgFile), resizeImg)
         else:
             resizeImg = misc.imresize(frontImg, (OUT_SIZE, OUT_SIZE))
-            fileName = imgFile[:-len('0001.jpg')] + 'front_' + imgFile[-len('0001.jpg'):]
-            misc.imsave(os.path.join(destDir, fileName), resizeImg)
+            misc.imsave(os.path.join(FRONT_DATA, imgFile), resizeImg)
         

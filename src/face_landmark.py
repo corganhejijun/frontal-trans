@@ -10,7 +10,7 @@ from .TriangleTransform import Transform
 class FaceMarks:
     def __init__(self, faceArea=FACE_AREA):
         self.SHAPE_MODEL = os.path.join(ROOT_PATH, "models", "shape_predictor_68_face_landmarks.dat")
-        self.EIGEN_PATH = os.path.join(ROOT_PATH, "datasets", "eigen_face.jpg")
+        self.EIGEN_PATH = os.path.join(ROOT_PATH, "models", "eigen_face.jpg")
         self.eignImg = cv2.cvtColor(cv2.imread(self.EIGEN_PATH), cv2.COLOR_BGR2RGB)
         self.detector = dlib.get_frontal_face_detector()
         self.shapePredictor = dlib.shape_predictor(self.SHAPE_MODEL)
@@ -50,23 +50,19 @@ class FaceMarks:
             # add ears
             xMin -= math.floor((xMax-xMin)/6)
             xMax += math.floor((xMax-xMin)/6)
-        for i in range(srcPoints.shape[0]):
-            if xMin > srcPoints[i][0]:
-                xMin = srcPoints[i][0]
-            if xMax < srcPoints[i][0]:
-                xMax = srcPoints[i][0]
-            if xMin > dstPoints[i][0]:
-                xMin = dstPoints[i][0]
-            if xMax < dstPoints[i][0]:
-                xMax = dstPoints[i][0]
-            if yMin > srcPoints[i][1]:
-                yMin = srcPoints[i][1]
-            if yMax < srcPoints[i][1]:
-                yMax = srcPoints[i][1]
-            if yMin > dstPoints[i][1]:
-                yMin = dstPoints[i][1]
-            if yMax < dstPoints[i][1]:
-                yMax = dstPoints[i][1]
+        def getPointRange(points, xMin, xMax, yMin, yMax):
+            for i in range(points.shape[0]):
+                if xMin > points[i][0]:
+                    xMin = points[i][0]
+                if xMax < points[i][0]:
+                    xMax = points[i][0]
+                if yMin > points[i][1]:
+                    yMin = points[i][1]
+                if yMax < points[i][1]:
+                    yMax = points[i][1]
+            return xMin, xMax, yMin, yMax
+        xMin, xMax, yMin, yMax = getPointRange(srcPoints, xMin, xMax, yMin, yMax)
+        xMin, xMax, yMin, yMax = getPointRange(dstPoints, xMin, xMax, yMin, yMax)
         if yMin < 1:
             yMin = 1
         if xMin < 1:
@@ -145,20 +141,22 @@ class FaceMarks:
                     continue
                 if transFlag[y, x] == 0:
                     transImg[y, x] = img[i, j]
-                    transFlag[y, x] = 1;
+                    transFlag[y, x] = 1
                 else:
+                    # get the first pixel value or average value
                     continue
-                    transImg[y, x] = (transImg[y, x] + img[i, j])/2
+                    # transImg[y, x] = (transImg[y, x] + img[i, j])/2
                 x = int(math.ceil(transMap[i][j][0])) + leftMargin
                 y = int(math.ceil(transMap[i][j][1])) + topMargin
                 if y >= imgHeight or x >= imgWidth:
                     continue
                 if transFlag[y, x] == 0:
                     transImg[y, x] = img[i, j]
-                    transFlag[y, x] = 1;
+                    transFlag[y, x] = 1
                 else:
+                    # get the first pixel value or average value
                     continue
-                    transImg[y, x] = (transImg[y, x] + img[i, j])/2
+                    # transImg[y, x] = (transImg[y, x] + img[i, j])/2
         # Fill the holes
         for i in range(imgHeight):
             for j in range(imgWidth):
@@ -202,6 +200,19 @@ class FaceMarks:
             return squareImg
         return img
 
+    def getFaceImgPosition(self, srcPoints, dstPoints, left, top):
+        toDel = []
+        for i in range(srcPoints.shape[0]):
+            srcPoints[i][0] -= left
+            srcPoints[i][1] -= top
+            dstPoints[i][0] -= left
+            dstPoints[i][1] -= top
+            if srcPoints[i][0] < 0 or srcPoints[i][1] < 0 or dstPoints[i][0] < 0 or dstPoints[i][1] < 0:
+                toDel.append(i)
+        srcPoints = np.delete(srcPoints, toDel, 0)
+        dstPoints = np.delete(dstPoints, toDel, 0)
+        return srcPoints, dstPoints
+
     def landmark_transform(self, img):
         dets = self.detector(img, 1)
         if (len(dets) == 0):
@@ -213,11 +224,7 @@ class FaceMarks:
         destPoints = self.getRelativePostion(self.getCenter(shape))
 
         faceImg, left, top = self.getFaceArea(img, shape, srcPoints, destPoints)
-        for i in range(srcPoints.shape[0]):
-            srcPoints[i][0] -= left
-            srcPoints[i][1] -= top
-            destPoints[i][0] -= left
-            destPoints[i][1] -= top
+        srcPoints, destPoints = self.getFaceImgPosition(srcPoints, destPoints, left, top)
         solver = Transform(srcPoints, destPoints, (0, 0, faceImg.shape[1], faceImg.shape[0]))
 
         imgIdx = np.zeros((faceImg.shape[0], faceImg.shape[1], 2))
