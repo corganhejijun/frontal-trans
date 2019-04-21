@@ -7,7 +7,7 @@ from scipy import misc
 
 destDir = os.path.join(Constant.ROOT_PATH, "datasets", "lfw_trans")
 DATASET = os.path.join(Constant.ROOT_PATH, "datasets", "lfw")
-landmark = Landmark(faceArea=Constant.HEAD_AREA)
+landmark = Landmark(faceArea=Constant.FACE_AREA)
 OUT_SIZE = 256
 
 if not os.path.isdir(destDir):
