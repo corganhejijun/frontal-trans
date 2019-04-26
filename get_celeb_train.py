@@ -9,6 +9,7 @@ dataset = 'celebA'
 train_dir = 'train'
 test_dir = 'val_test'
 val_dir = 'val'
+resize_to = 256
 scale = 4
 
 if not os.path.exists(os.path.join(dataset_dir, train_dir)):
@@ -25,6 +26,7 @@ for index, file in enumerate(fileList):
         continue
     print("procesing " + file + " " + str(index+1) + '/' + str(len(fileList)))
     img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
+    img = misc.imresize(img, (resize_to, resize_to))
     size = int(img.shape[0] / scale)
     resizeImg = misc.imresize(img, (size, size))
     finalImg = misc.imresize(resizeImg, (img.shape[0], img.shape[0]))
