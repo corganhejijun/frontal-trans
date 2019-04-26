@@ -208,7 +208,7 @@ class ScaleGan(object):
             batch_idxs = min(len(data), args.train_size) // self.batch_size
             for idx in range(0, batch_idxs):
                 batch_files = data[idx*self.batch_size:(idx+1)*self.batch_size]
-                batch = [load_data(batch_file, self.image_size, self.img_size+30) for batch_file in batch_files]
+                batch = [load_data(batch_file, self.img_size, self.img_size+30) for batch_file in batch_files]
                 batch_images = np.array(batch).astype(np.float32)
                 for i in range(len(d_optim)):
                     _, summary_str = self.sess.run([d_optim[i], self.d_sum], feed_dict={self.input_img: batch_images})
