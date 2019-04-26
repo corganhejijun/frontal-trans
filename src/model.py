@@ -183,16 +183,16 @@ class ScaleGan(object):
         for i in range(len(self.D_sum_fake_AB)):
             g_sum_list.append(self.D_sum_fake_AB[i])
             g_sum_list.append(self.D_sum_both_BB[i])
-            g_sum_list.append(self.fake_B_sum)
-            g_sum_list.append(self.d_loss_fake_sum)
-            g_sum_list.append(self.d_loss_both_sum)
-            g_sum_list.append(self.g_loss_sum)
+            g_sum_list.append(self.fake_B_sum[i])
+            g_sum_list.append(self.d_loss_fake_sum[i])
+            g_sum_list.append(self.d_loss_both_sum[i])
+            g_sum_list.append(self.g_loss_sum[i])
         self.g_sum = tf.summary.merge(g_sum_list)
         d_sum_list = []
         for i in range(len(self.D_sum_real_AB)):
             d_sum_list.append(self.D_sum_real_AB[i])
-            d_sum_list.append(self.d_loss_real_sum)
-            d_sum_list.append(self.d_loss_sum)
+            d_sum_list.append(self.d_loss_real_sum[i])
+            d_sum_list.append(self.d_loss_sum[i])
         self.d_sum = tf.summary.merge(d_sum_list)
 
         self.writer = tf.summary.FileWriter("./logs", self.sess.graph)
