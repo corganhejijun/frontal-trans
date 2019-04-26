@@ -203,10 +203,10 @@ class ScaleGan(object):
         else:
             print(" [!] Load failed...")
             
-        for epoch in xrange(args.epoch):
+        for epoch in range(args.epoch):
             data = glob('./datasets/{}/train/*.jpg'.format(self.dataset_name))
             batch_idxs = min(len(data), args.train_size) // self.batch_size
-            for idx in xrange(0, batch_idxs):
+            for idx in range(0, batch_idxs):
                 batch_files = data[idx*self.batch_size:(idx+1)*self.batch_size]
                 batch = [load_data(batch_file, self.image_size, self.img_size+30) for batch_file in batch_files]
                 batch_images = np.array(batch).astype(np.float32)
@@ -245,7 +245,10 @@ class ScaleGan(object):
                 size = h.shape[1].value
                 count = 0
                 while size > 8:
-                    h = lrelu(conv2d(h, self.conv_dim*(2**count), name="d_" + str(i) + "_h" + str(count) + "_conv"))
+                    fact = 2**count
+                    if fact > 8:
+                        fact = 8
+                    h = lrelu(conv2d(h, self.conv_dim*fact, name="d_" + str(i) + "_h" + str(count) + "_conv"))
                     size = h.shape[1].value
                     count += 1
                 D.append(tf.nn.sigmoid(h))
@@ -261,7 +264,10 @@ class ScaleGan(object):
         eList = [e]
         # from img_size to 1x1
         while size > 1:
-            e = conv2d(lrelu(e), self.conv_dim*(2**count), name="g_e" + str(count) + "_conv")
+            fact = 2**count
+            if fact > 8:
+                fact = 8
+            e = conv2d(lrelu(e), self.conv_dim*fact, name="g_e" + str(count) + "_conv")
             size = e.shape[1].value
             count += 1
             if size == 1:
@@ -274,7 +280,10 @@ class ScaleGan(object):
         while size < self.origin_size:
             size = size*2
             d_for_out = d
-            d = deconv2d(tf.nn.relu(d), [self.batch_size, size, size, self.conv_dim*(2**count)],
+            fact = 2**count
+            if fact > 8:
+                fact = 8
+            d = deconv2d(tf.nn.relu(d), [self.batch_size, size, size, self.conv_dim*fact],
                             name="g_d" + str(count) + "_deconv")
             d = tf.concat([d, eList[-1]], 3)
             del eList[-1]
@@ -289,8 +298,11 @@ class ScaleGan(object):
             count -=1
             rb = multi_residual_block(d, size)
             d_for_out = rb
+            fact = 2**count
+            if fact > 8:
+                fact = 8
             if size < self.img_size:
-                d = deconv2d(tf.nn.relu(rb), [self.batch_size, size, size, self.conv_dim*(2**count)],
+                d = deconv2d(tf.nn.relu(rb), [self.batch_size, size, size, self.conv_dim*fact],
                                 name="g_d" + str(count) + "_deconv")
                 d = tf.concat([d, eList[-1]], 3)
                 del eList[-1]
@@ -322,7 +334,7 @@ class ScaleGan(object):
             batch_count += 1
             sample = [load_data(sample_file, self.img_size, self.img_size+30, is_test=True) for sample_file in sample_files]
             sample_images = np.array(sample).astype(np.float32)
-            sample_images = [sample_images[i:i+self.batch_size] for i in xrange(0, len(sample_images), self.batch_size)]
+            sample_images = [sample_images[i:i+self.batch_size] for i in range(0, len(sample_images), self.batch_size)]
             sample_images = np.array(sample_images)
 
             if self.load(self.checkpoint_dir):
