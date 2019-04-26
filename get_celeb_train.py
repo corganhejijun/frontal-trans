@@ -23,7 +23,7 @@ for index, file in enumerate(fileList):
     imgPath = os.path.join(dataset_dir, dataset, file)
     if os.path.isdir(imgPath):
         continue
-    print("procesing " + file + str(index) + '/' + str(len(fileList)))
+    print("procesing " + file + " " + str(index+1) + '/' + str(len(fileList)))
     img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
     size = int(img.shape[0] / scale)
     resizeImg = misc.imresize(img, (size, size))
