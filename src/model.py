@@ -156,7 +156,7 @@ class ScaleGan(object):
 
     def load_random_samples(self):
         data = np.random.choice(glob('./datasets/{}/val/*.jpg'.format(self.dataset_name)), self.batch_size)
-        sample = [load_data(sample_file, self.image_size, self.img_size + 30) for sample_file in data]
+        sample = [load_data(sample_file, self.img_size, self.img_size + 30) for sample_file in data]
         sample_images = np.array(sample).astype(np.float32)
         return sample_images
         
