@@ -18,10 +18,12 @@ if not os.path.exists(os.path.join(dataset_dir, test_dir)):
 if not os.path.exists(os.path.join(dataset_dir, val_dir)):
     os.mkdir(os.path.join(dataset_dir, val_dir))
 
-for index, file in enumerate(os.listdir(os.path.join(dataset_dir, dataset))):
+fileList = os.listdir(os.path.join(dataset_dir, dataset))
+for index, file in enumerate(fileList):
     imgPath = os.path.join(dataset_dir, dataset, file)
     if os.path.isdir(imgPath):
         continue
+    print("procesing " + file + str(index) + '/' + str(len(fileList)))
     img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
     size = int(img.shape[0] / scale)
     resizeImg = misc.imresize(img, (size, size))
