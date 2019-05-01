@@ -83,11 +83,11 @@ class ScaleGan(object):
         self.d_loss_fake = []
         for i in range(len(self.D_fake_AB)):
             self.d_loss_fake.append(tf.reduce_mean(
-                    tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_AB_logits[i], labels=tf.ones_like(self.D_fake_AB[i]))))
+                    tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_AB_logits[i], labels=tf.zeros_like(self.D_fake_AB[i]))))
         self.d_loss_both = []
         for i in range(len(self.D_both_BB)):
             self.d_loss_both.append(tf.reduce_mean(
-                    tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_both_BB_logits[i], labels=tf.ones_like(self.D_both_BB[i]))))
+                    tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_both_BB_logits[i], labels=tf.zeros_like(self.D_both_BB[i]))))
         self.g_loss = []
         for i in range(len(self.D_both_BB)):
             self.g_loss.append(
@@ -256,8 +256,6 @@ class ScaleGan(object):
             return D, D_logits
 
     def scaleImage(self, img):
-        fakeB = []
-        fakeB = []
         e = conv2d(img, self.conv_dim, name='g_e0_conv')
         size = e.shape[1].value
         count = 1
