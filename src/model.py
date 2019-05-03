@@ -65,7 +65,7 @@ class ScaleGan(object):
 
         self.D_sum_real_AB = []
         for i in range(len(self.D_real_AB)):
-            self.D_sum_real_AB.append(tf.summary.histogram("real_AB_d_" + str(i), self.D_real_AB[i]))
+            self.D_sum_real_AB.append(tf.summary.histogram("d_real_AB_" + str(i), self.D_real_AB[i]))
         self.D_sum_fake_AB = []
         for i in range(len(self.D_fake_AB)):
             self.D_sum_fake_AB.append(tf.summary.histogram("d_fake_AB_" + str(i), self.D_fake_AB[i]))
@@ -91,7 +91,7 @@ class ScaleGan(object):
         self.g_loss = []
         for i in range(len(self.D_both_BB)):
             self.g_loss.append(
-                tf.reduce_mean(
+                0.3 * tf.reduce_mean(
                     tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_both_BB_logits[i], labels=tf.ones_like(self.D_both_BB[i])))
                 + self.L1_lambda * tf.reduce_mean(tf.abs(self.real_B[i] - self.fake_B[i]))
                 + tf.reduce_mean(
@@ -212,6 +212,8 @@ class ScaleGan(object):
                 batch_images = np.array(batch).astype(np.float32)
                 for i in range(len(d_optim)):
                     _, summary_str = self.sess.run([d_optim[i], self.d_sum], feed_dict={self.input_img: batch_images})
+                    self.writer.add_summary(summary_str, counter)
+                    _, summary_str = self.sess.run([g_optim[i], self.g_sum], feed_dict={self.input_img: batch_images})
                     self.writer.add_summary(summary_str, counter)
                     _, summary_str = self.sess.run([g_optim[i], self.g_sum], feed_dict={self.input_img: batch_images})
                     self.writer.add_summary(summary_str, counter)
