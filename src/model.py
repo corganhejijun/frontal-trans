@@ -59,9 +59,9 @@ class ScaleGan(object):
         for i in range(len(self.real_B)):
             self.both_BB.append(tf.concat([self.real_B[i], self.fake_B[i]], 3))
 
-        self.D_real_AB, self.D_real_AB_logits = self.discriminator(self.real_AB, name="discriminator_AB")
-        self.D_fake_AB, self.D_fake_AB_logits = self.discriminator(self.real_AB, name="discriminator_AB", reuse=True)
-        self.D_both_BB, self.D_both_BB_logits = self.discriminator(self.both_BB, name="discriminator_BB", reuse=True)
+        self.D_real_AB, self.D_real_AB_logits = self.discriminator(self.real_AB, name="discriminator")
+        self.D_fake_AB, self.D_fake_AB_logits = self.discriminator(self.real_AB, name="discriminator", reuse=True)
+        self.D_both_BB, self.D_both_BB_logits = self.discriminator(self.both_BB, name="discriminator", reuse=True)
 
         self.D_sum_real_AB = []
         for i in range(len(self.D_real_AB)):
