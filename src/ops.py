@@ -104,7 +104,7 @@ def residual_block(input_d, size, type):
     return tf.nn.relu(rb_sum)
 
 def multi_residual_block(input_d, size):
-    rbCount = 2
+    rbCount = 4
     rb = input_d
     for i in range(rbCount):
         rb = residual_block(rb, size, i)

@@ -61,7 +61,7 @@ class ScaleGan(object):
 
         self.D_real_AB, self.D_real_AB_logits = self.discriminator(self.real_AB, name="discriminator_AB")
         self.D_fake_AB, self.D_fake_AB_logits = self.discriminator(self.real_AB, name="discriminator_AB", reuse=True)
-        self.D_both_BB, self.D_both_BB_logits = self.discriminator(self.both_BB, name="discriminator_BB")
+        self.D_both_BB, self.D_both_BB_logits = self.discriminator(self.both_BB, name="discriminator_BB", reuse=True)
 
         self.D_sum_real_AB = []
         for i in range(len(self.D_real_AB)):
@@ -91,7 +91,7 @@ class ScaleGan(object):
         self.g_loss = []
         for i in range(len(self.D_both_BB)):
             self.g_loss.append(
-                0.3 * tf.reduce_mean(
+                0.1 * tf.reduce_mean(
                     tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_both_BB_logits[i], labels=tf.ones_like(self.D_both_BB[i])))
                 + self.L1_lambda * tf.reduce_mean(tf.abs(self.real_B[i] - self.fake_B[i]))
                 + tf.reduce_mean(
