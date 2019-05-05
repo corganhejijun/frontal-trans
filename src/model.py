@@ -250,7 +250,8 @@ class ScaleGan(object):
                     fact = 2**count
                     if fact > 8:
                         fact = 8
-                    h = lrelu(conv2d(h, self.conv_dim*fact, name="d_" + str(i) + "_h" + str(count) + "_conv"))
+                    h = batch_norm(conv2d(h, self.conv_dim*fact, name="d_" + str(i) + "_h" + str(count) + "_conv"), name="d_bn" + str(i))
+                    h = lrelu(h)
                     size = h.shape[1].value
                     count += 1
                 D.append(tf.nn.sigmoid(h))
@@ -267,7 +268,7 @@ class ScaleGan(object):
             fact = 2**count
             if fact > 8:
                 fact = 8
-            e = conv2d(lrelu(e), self.conv_dim*fact, name="g_e" + str(count) + "_conv")
+            e = batch_norm(conv2d(lrelu(e), self.conv_dim*fact, name="g_e" + str(count) + "_conv"), "g_bn_e" + str(count) + "_conv")
             size = e.shape[1].value
             count += 1
             if size == 1:
@@ -285,6 +286,7 @@ class ScaleGan(object):
                 fact = 8
             d = deconv2d(tf.nn.relu(d), [self.batch_size, size, size, self.conv_dim*fact],
                             name="g_d" + str(count) + "_deconv")
+            d = batch_norm(d, "g_bn_d" + str(count) + "_deconv")
             d = tf.concat([d, eList[-1]], 3)
             del eList[-1]
             count -= 1
