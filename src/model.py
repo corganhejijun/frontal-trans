@@ -250,7 +250,9 @@ class ScaleGan(object):
                     fact = 2**count
                     if fact > 8:
                         fact = 8
-                    h = batch_norm(conv2d(h, self.conv_dim*fact, name="d_" + str(i) + "_h" + str(count) + "_conv"), name="d_bn" + str(count))
+                    h = batch_norm(
+                        conv2d(h, self.conv_dim*fact, name="d_" + str(i) + "_h" + str(count) + "_conv"),
+                        name="d_" + str(i) + "_bn" + str(count))
                     h = lrelu(h)
                     size = h.shape[1].value
                     count += 1
