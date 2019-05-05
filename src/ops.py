@@ -6,7 +6,7 @@ from tensorflow.python.framework import ops
 
 from .utils import *
 
-def batch_norm(x, train=True, name="batch_norm", epsilon=1e-5, momentum = 0.9):
+def batch_norm(x, name="batch_norm", train=True, epsilon=1e-5, momentum = 0.9):
     return tf.contrib.layers.batch_norm(x, decay=momentum, updates_collections=None, epsilon=epsilon, scale=True, scope=name)
 
 def binary_cross_entropy(preds, targets, name=None):
