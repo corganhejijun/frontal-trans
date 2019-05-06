@@ -83,11 +83,11 @@ class ScaleGan(object):
         self.d_loss_fake = []
         for i in range(len(self.D_fake_AB)):
             self.d_loss_fake.append(tf.reduce_mean(
-                    tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_AB_logits[i], labels=tf.ones_like(self.D_fake_AB[i]))))
+                    tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_AB_logits[i], labels=tf.zeros_like(self.D_fake_AB[i]))))
         self.d_loss_both = []
         for i in range(len(self.D_both_BB)):
             self.d_loss_both.append(tf.reduce_mean(
-                    tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_both_BB_logits[i], labels=tf.ones_like(self.D_both_BB[i]))))
+                    tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_both_BB_logits[i], labels=tf.zeros_like(self.D_both_BB[i]))))
         self.g_loss = []
         for i in range(len(self.D_both_BB)):
             self.g_loss.append(
@@ -305,9 +305,10 @@ class ScaleGan(object):
             fact = 2**count
             if fact > 8:
                 fact = 8
-            if size < self.img_size:
+            if size != self.img_size:
                 d = deconv2d(tf.nn.relu(rb), [self.batch_size, size, size, self.conv_dim*fact],
                                 name="g_d" + str(count) + "_deconv")
+                d = batch_norm(d, name="g_bn_d" + str(count) + "_deconv")
                 d = tf.concat([d, eList[-1]], 3)
                 del eList[-1]
         return fakeB
