@@ -5,7 +5,7 @@ import numpy as np
 import math
 import cv2
 import dlib
-from .TriangleTransform import Transform
+from .MovingLSQ import MovingLSQ
 
 class FaceMarks:
     def __init__(self, faceArea=FACE_AREA):
@@ -225,13 +225,19 @@ class FaceMarks:
 
         faceImg, left, top = self.getFaceArea(img, shape, srcPoints, destPoints)
         srcPoints, destPoints = self.getFaceImgPosition(srcPoints, destPoints, left, top)
-        solver = Transform(srcPoints, destPoints, (0, 0, faceImg.shape[1], faceImg.shape[0]))
+        # solver = Transform(srcPoints, destPoints, (0, 0, faceImg.shape[1], faceImg.shape[0]))
+        solver = MovingLSQ(srcPoints, destPoints)
 
-        imgIdx = np.zeros((faceImg.shape[0], faceImg.shape[1], 2))
+        # imgIdx = np.zeros((faceImg.shape[0], faceImg.shape[1], 2))
+        imgIdx = np.zeros((faceImg.shape[0] * faceImg.shape[1], 2))
         for i in range(faceImg.shape[0]):
             for j in range(faceImg.shape[1]):
-                imgIdx[i, j] = [j, i]
-        transMap = solver.Run(imgIdx, faceImg)
+                # imgIdx[i, j] = [j, i]
+                imgIdx[i * faceImg.shape[1] + j] = [j, i]
+        # transMap = solver.Run(imgIdx, faceImg)
+        transMap = solver.Run_Rigid(imgIdx)
+        transMap = transMap.reshape((faceImg.shape[0], faceImg.shape[1], 2))
+
         transImg = self.fillTransImg(faceImg, transMap)
         return self.square(transImg)
     
