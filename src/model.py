@@ -308,6 +308,7 @@ class ScaleGan(object):
             if size < self.img_size:
                 d = deconv2d(tf.nn.relu(rb), [self.batch_size, size, size, self.conv_dim*fact],
                                 name="g_d" + str(count) + "_deconv")
+                d = batch_norm(d, name="g_bn_d" + str(count) + "_deconv")
                 d = tf.concat([d, eList[-1]], 3)
                 del eList[-1]
         return fakeB
