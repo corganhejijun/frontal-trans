@@ -89,10 +89,13 @@ def linear(input_, output_size, scope=None, stddev=0.02, bias_start=0.0, with_w=
             return tf.matmul(input_, matrix) + bias
             
 def residual_block(input_d, size, type):
-    rb1 = conv2d(input_d, input_d.shape[-1].value, d_h=1, d_w=1, name='g_rb_' + str(size) + '_conv_rb' + str(type) + '_1')
-    rb1 = tf.nn.relu(rb1)
-    rb2 = conv2d(rb1, input_d.shape[-1].value, d_h=1, d_w=1, name='g_rb_' + str(size) + '_conv_rb' + str(type) + '_2')
-    rb_sum = tf.add(input_d, rb2, name='g_rb_' + str(size) + '_add_rb' + str(type))
+    rb = input_d
+    rbCount = 2
+    for i in range(rbCount):
+        rb = conv2d(rb, input_d.shape[-1].value, d_h=1, d_w=1, name='g_rb_' + str(size) + '_conv_rb' + str(type) + '_' + str(i))
+        rb = batch_norm(rb, name="g_rb_bn_" + str(size) + "_" + str(type) + "_" + str(i))
+        rb = tf.nn.relu(rb)
+    rb_sum = tf.add(input_d, rb, name='g_rb_' + str(size) + '_add_rb' + str(type))
     return tf.nn.relu(rb_sum)
 
 def multi_residual_block(input_d, size):

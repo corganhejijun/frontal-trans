@@ -90,13 +90,20 @@ class ScaleGan(object):
                     tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_both_BB_logits[i], labels=tf.zeros_like(self.D_both_BB[i]))))
         self.g_loss = []
         for i in range(len(self.D_both_BB)):
-            self.g_loss.append(
-                0.1 * tf.reduce_mean(
-                    tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_both_BB_logits[i], labels=tf.ones_like(self.D_both_BB[i])))
-                + self.L1_lambda * tf.reduce_mean(tf.abs(self.real_B[i] - self.fake_B[i]))
-                + tf.reduce_mean(
-                    tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_AB_logits[i], labels=tf.ones_like(self.D_fake_AB[i])))
-            )
+            if i == 0:
+                self.g_loss.append(
+                    tf.reduce_mean(
+                        tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_both_BB_logits[i], labels=tf.ones_like(self.D_both_BB[i])))
+                    + self.L1_lambda * tf.reduce_mean(tf.abs(self.real_B[i] - self.fake_B[i]))
+                    + tf.reduce_mean(
+                        tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_AB_logits[i], labels=tf.ones_like(self.D_fake_AB[i])))
+                )
+            else:
+                self.g_loss.append(
+                    self.L1_lambda * tf.reduce_mean(tf.abs(self.real_B[i] - self.fake_B[i]))
+                    + tf.reduce_mean(
+                        tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_AB_logits[i], labels=tf.ones_like(self.D_fake_AB[i])))
+                )
         
         self.d_loss_real_sum = []
         for i in range(len(self.d_loss_real)):
@@ -110,7 +117,10 @@ class ScaleGan(object):
 
         self.d_loss = []
         for i in range(len(self.d_loss_real)):
-            self.d_loss.append(self.d_loss_real[i] + self.d_loss_fake[i] + self.d_loss_both[i])
+            if i == 0:
+                self.d_loss.append(self.d_loss_real[i] + self.d_loss_fake[i] + self.d_loss_both[i])
+            else:
+                self.d_loss.append(self.d_loss_real[i] + self.d_loss_fake[i])
         self.d_loss_sum = []
         for i in range(len(self.d_loss)):
             self.d_loss_sum.append(tf.summary.scalar("d_loss_" + str(i), self.d_loss[i]))
