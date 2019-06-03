@@ -5,11 +5,11 @@ from scipy import misc
 from PIL import Image
 
 dataset_dir = 'datasets'
-dataset = 'celebA'
+dataset = 'SRtrainset_2'
 train_dir = 'train'
 test_dir = 'val_test'
 val_dir = 'val'
-resize_to = 256
+resize_to = 64
 scale = 4
 
 if not os.path.exists(os.path.join(dataset_dir, train_dir)):
@@ -28,8 +28,8 @@ for index, file in enumerate(fileList):
     img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
     img = misc.imresize(img, (resize_to, resize_to))
     size = int(img.shape[0] / scale)
-    resizeImg = misc.imresize(img, (size, size))
-    finalImg = misc.imresize(resizeImg, (img.shape[0], img.shape[0]))
+    resizeImg = misc.imresize(img, (size, size), interp='bilinear')
+    finalImg = misc.imresize(resizeImg, (img.shape[0], img.shape[0]), interp='bilinear')
     combineImg = Image.new('RGB', (img.shape[0]*2, img.shape[0]))
     combineImg.paste(Image.fromarray(finalImg), (0,0))
     combineImg.paste(Image.fromarray(img), (img.shape[0]+1,0))
