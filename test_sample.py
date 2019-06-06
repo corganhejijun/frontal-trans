@@ -22,4 +22,4 @@ for index, file in enumerate(fileList):
     combineImg = Image.new('RGB', (img.shape[0]*2, img.shape[0]))
     combineImg.paste(Image.fromarray(img), (0,0))
     combineImg.paste(Image.fromarray(img), (img.shape[0]+1,0))
-    misc.imsave(os.path.join(dest_path, file))
+    misc.imsave(os.path.join(dest_path, file), combineImg)
