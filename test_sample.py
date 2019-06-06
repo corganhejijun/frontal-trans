@@ -4,8 +4,8 @@ import cv2
 from scipy import misc
 from PIL import Image
 
-sample_path = '~/git/Face-and-Image-super-resolution/testset'
-dest_path = 'datasets/SRtrain/val_test'
+sample_path = '../git/Face-and-Image-super-resolution/testset'
+dest_path = 'datasets/SRtrain/val_test/'
 imgSize = 64
 
 if not os.path.exists(dest_path):
