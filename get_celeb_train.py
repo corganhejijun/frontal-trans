@@ -26,7 +26,7 @@ for index, file in enumerate(fileList):
         continue
     print("procesing " + file + " " + str(index+1) + '/' + str(len(fileList)))
     img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
-    img = misc.imresize(img, (resize_to, resize_to))
+    img = misc.imresize(img, (resize_to, resize_to), interp='bilinear')
     size = int(img.shape[0] / scale)
     resizeImg = misc.imresize(img, (size, size), interp='bilinear')
     finalImg = misc.imresize(resizeImg, (img.shape[0], img.shape[0]), interp='bilinear')
