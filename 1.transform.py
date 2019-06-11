@@ -5,10 +5,10 @@ from src.face_landmark import FaceMarks as Landmark
 import cv2
 from scipy import misc
 
-DATASET = "lfw"
-destDir = os.path.join(Constant.ROOT_PATH, "datasets", DATASET + "_trans")
-DATASET = os.path.join(Constant.ROOT_PATH, "datasets", DATASET)
-FRONT_DATA = os.path.join(Constant.ROOT_PATH, "datasets", DATASET + "_front")
+DATASET_NAME = "celebA"
+destDir = os.path.join(Constant.ROOT_PATH, "datasets", DATASET_NAME + "_trans")
+DATASET = os.path.join(Constant.ROOT_PATH, "datasets", DATASET_NAME)
+FRONT_DATA = os.path.join(Constant.ROOT_PATH, "datasets", DATASET_NAME + "_front")
 landmark = Landmark(faceArea=Constant.FACE_AREA)
 OUT_SIZE = 256
 REPLACE_OLD = False
