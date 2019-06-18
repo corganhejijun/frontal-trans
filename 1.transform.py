@@ -24,7 +24,7 @@ for index, subFolder in enumerate(os.listdir(DATASET)):
     subFolderPath = os.path.join(DATASET, subFolder)
     totalSubFile = str(len(os.listdir(subFolderPath)))
     for i, imgFile in enumerate(os.listdir(subFolderPath)):
-        print("processing " + imgFile + " " + str(i+1) + " of total " + totalLength
+        print("processing " + imgFile + " " + str(i+1) + " of total " + totalSubFile
                     + " in subFolder " + subFolder + " " + str(index+1) + "/" + str(totalLength))
         if not REPLACE_OLD and os.path.exists(os.path.join(destDir, imgFile)):
             continue
