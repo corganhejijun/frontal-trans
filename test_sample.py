@@ -4,8 +4,9 @@ import cv2
 from scipy import misc
 from PIL import Image
 
-sample_path = 'C:\\Users\\corgan\\Desktop\\aaa\\mytest'
-dest_path = sample_path + "\\dest"
+sample_path = 'datasets/celeb_train/lfw_trans'
+dest_path = sample_path + "/../dest"
+middleSize = 64
 imgSize = 256
 kernel_size = (5, 5)
 sigma = 5
@@ -20,6 +21,7 @@ for index, file in enumerate(fileList):
         continue
     print("procesing " + file + " " + str(index+1) + '/' + str(len(fileList)))
     img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
+    img = misc.imresize(img, (middleSize, middleSize), interp='bilinear')
     img = misc.imresize(img, (imgSize, imgSize), interp='bilinear')
     img = cv2.GaussianBlur(img, kernel_size, sigma)
     combineImg = Image.new('RGB', (img.shape[0]*2, img.shape[0]))
