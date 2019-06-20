@@ -20,7 +20,7 @@ for index, subFolder in enumerate(fileList):
     print("procesing " + subFolder + " " + str(index+1) + '/' + str(len(fileList)))
     subPath = os.path.join(sample_path, subFolder)
     for file in os.listdir(subPath):
-        imgPath = os.path.join(subFolder, file)
+        imgPath = os.path.join(subPath, file)
         img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
         img64 = misc.imresize(img, (middleSize, middleSize), interp='bilinear')
         img16 = misc.imresize(img, (imgSize, imgSize), interp='bilinear')
