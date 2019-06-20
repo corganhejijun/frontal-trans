@@ -257,6 +257,14 @@ class FaceMarks:
         faceImg = self.getFaceArea(img, shape, points, points)
         return faceImg
 
+    def copyFace(self, img):
+        dets = self.detector(img, 1)
+        if (len(dets) == 0):
+            return None
+        shape = self.shapePredictor(img, dets[0])
+        points = self.getMarkPoints(shape)
+        faceImg, _, _ = self.getFaceArea(img, shape, points, points)
+        return faceImg
 
     def getRelativePostion(self, center):
         destPoints = np.zeros((len(self.eignPoints), 2))
