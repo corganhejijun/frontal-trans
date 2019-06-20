@@ -4,9 +4,11 @@ import cv2
 from scipy import misc
 from PIL import Image
 
-sample_path = '../Face-and-Image-super-resolution/testset'
-dest_path = 'datasets/SRtrain/val_test/'
-imgSize = 64
+sample_path = 'C:\\Users\\corgan\\Desktop\\aaa\\mytest'
+dest_path = sample_path + "\\dest"
+imgSize = 256
+kernel_size = (5, 5)
+sigma = 5
 
 if not os.path.exists(dest_path):
     os.mkdir(dest_path)
@@ -19,6 +21,7 @@ for index, file in enumerate(fileList):
     print("procesing " + file + " " + str(index+1) + '/' + str(len(fileList)))
     img = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
     img = misc.imresize(img, (imgSize, imgSize), interp='bilinear')
+    img = cv2.GaussianBlur(img, sigma)
     combineImg = Image.new('RGB', (img.shape[0]*2, img.shape[0]))
     combineImg.paste(Image.fromarray(img), (0,0))
     combineImg.paste(Image.fromarray(img), (img.shape[0]+1,0))
