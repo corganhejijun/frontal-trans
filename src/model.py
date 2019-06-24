@@ -60,7 +60,7 @@ class ScaleGan(object):
             self.both_BB.append(tf.concat([self.real_B[i], self.fake_B[i]], 3))
 
         self.D_real_AB, self.D_real_AB_logits = self.discriminator(self.real_AB, name="discriminator")
-        self.D_fake_AB, self.D_fake_AB_logits = self.discriminator(self.real_AB, name="discriminator", reuse=True)
+        self.D_fake_AB, self.D_fake_AB_logits = self.discriminator(self.fake_AB, name="discriminator", reuse=True)
         self.D_both_BB, self.D_both_BB_logits = self.discriminator(self.both_BB, name="discriminator", reuse=True)
 
         self.D_sum_real_AB = []
@@ -166,7 +166,7 @@ class ScaleGan(object):
 
     def load_random_samples(self):
         data = np.random.choice(glob('./datasets/{}/val/*.jpg'.format(self.dataset_name)), self.batch_size)
-        sample = [load_data(sample_file, self.img_size, self.img_size + 30) for sample_file in data]
+        sample = [load_data(sample_file, self.img_size, self.img_size + int(self.img_size/8)) for sample_file in data]
         sample_images = np.array(sample).astype(np.float32)
         return sample_images
         
@@ -218,7 +218,7 @@ class ScaleGan(object):
             batch_idxs = min(len(data), args.train_size) // self.batch_size
             for idx in range(0, batch_idxs):
                 batch_files = data[idx*self.batch_size:(idx+1)*self.batch_size]
-                batch = [load_data(batch_file, self.img_size, self.img_size+30) for batch_file in batch_files]
+                batch = [load_data(batch_file, self.img_size, self.img_size+int(self.img_size/8)) for batch_file in batch_files]
                 batch_images = np.array(batch).astype(np.float32)
                 for i in range(len(d_optim)):
                     _, summary_str = self.sess.run([d_optim[i], self.d_sum], feed_dict={self.input_img: batch_images})
@@ -347,7 +347,7 @@ class ScaleGan(object):
             sample_files = sample_files_all[batch_count * max_size : endIdx]
             print("Loading testing images ... from {0} to {1} of total {2}".format(batch_count * max_size, endIdx, len(sample_files_all)))
             batch_count += 1
-            sample = [load_data(sample_file, self.img_size, self.img_size+30, is_test=True) for sample_file in sample_files]
+            sample = [load_data(sample_file, self.img_size, self.img_size+int(self.img_size/8), is_test=True) for sample_file in sample_files]
             sample_images = np.array(sample).astype(np.float32)
             sample_images = [sample_images[i:i+self.batch_size] for i in range(0, len(sample_images), self.batch_size)]
             sample_images = np.array(sample_images)
