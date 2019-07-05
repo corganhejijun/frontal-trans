@@ -24,7 +24,7 @@ def load_data(image_path, fine_size, load_size, flip=True, is_test=False):
     img_A = img_A/127.5 - 1.  # color value unify
     img_B = img_B/127.5 - 1.
 
-    img_AB = np.concatenate((img_A, img_B), axis=2)
+    img_AB = np.dstack((img_A, img_B))
     # img_AB shape: (fine_size, fine_size, input_c_dim + output_c_dim)
     return img_AB
 
