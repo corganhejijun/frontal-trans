@@ -58,13 +58,13 @@ def preprocess_A_and_B(img_A, img_B, fine_size, load_size, flip=True, is_test=Fa
 
 # -----------------------------
 
-def get_image(image_path, image_size, is_crop=True, resize_w=64, is_grayscale = False):
+def get_image(image_path, image_size, is_crop=True, resize_w=64, is_grayscale = True):
     return transform(imread(image_path, is_grayscale), image_size, is_crop, resize_w)
 
 def save_images(images, size, image_path):
     return imsave(inverse_transform(images), size, image_path)
 
-def imread(path, is_grayscale = False):
+def imread(path, is_grayscale = True):
     if (is_grayscale):
         return scipy.misc.imread(path, flatten = True).astype(np.float)
     else:
