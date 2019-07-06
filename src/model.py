@@ -366,4 +366,4 @@ class ScaleGan(object):
                 samples = self.sess.run(self.fake_sample, feed_dict={self.input_img: sample_image})
                 for j in range(self.batch_size):
                     save_images(samples[j*self.origin_size:(j+1)*self.origin_size], [self.batch_size, 1],
-                        './{}/{}.png'.format(args.test_dir, sample_files[i*self.batch_size+j]))
+                        './{}/{}.png'.format(args.test_dir, sample_files[i*self.batch_size+j].split('/')[-1].split('.jpg')[0]))
