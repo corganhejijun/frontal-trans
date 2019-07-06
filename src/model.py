@@ -366,4 +366,4 @@ class ScaleGan(object):
                 samples = self.sess.run(self.fake_sample, feed_dict={self.input_img: sample_image})
                 for j in range(self.batch_size):
                     jdx = j+i*self.batch_size
-                    save_images(samples[jdx, :, :, :], [1, 1], './{}/{}.png'.format(args.test_dir, sample_files[jdx].split('/')[-1].split('.jpg')[0]))
+                    save_images(samples[jdx, :, :, :], './{}/{}.png'.format(args.test_dir, sample_files[jdx].split('/')[-1].split('.jpg')[0]))
