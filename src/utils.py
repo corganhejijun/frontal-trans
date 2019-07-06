@@ -64,7 +64,7 @@ def get_image(image_path, image_size, is_crop=True, resize_w=64, is_grayscale = 
 def save_images(images, image_path):
     return imsave(inverse_transform(images), image_path)
     
-def save_merge_images(images, size, image_path)
+def save_merge_images(images, size, image_path):
     return scipy.misc.imsave(image_path, merge(inverse_transform(images), size))
 
 def imread(path, is_grayscale = False):
