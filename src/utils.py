@@ -24,7 +24,7 @@ def load_data(image_path, fine_size, load_size, flip=True, is_test=False):
     img_A = img_A/127.5 - 1.  # color value unify
     img_B = img_B/127.5 - 1.
 
-    img_AB = np.dstack((img_A, img_B))
+    img_AB = np.concatenate((img_A, img_B), axis=2)
     # img_AB shape: (fine_size, fine_size, input_c_dim + output_c_dim)
     return img_AB
 
@@ -58,13 +58,13 @@ def preprocess_A_and_B(img_A, img_B, fine_size, load_size, flip=True, is_test=Fa
 
 # -----------------------------
 
-def get_image(image_path, image_size, is_crop=True, resize_w=64, is_grayscale = True):
+def get_image(image_path, image_size, is_crop=True, resize_w=64, is_grayscale = False):
     return transform(imread(image_path, is_grayscale), image_size, is_crop, resize_w)
 
 def save_images(images, size, image_path):
     return imsave(inverse_transform(images), size, image_path)
 
-def imread(path, is_grayscale = True):
+def imread(path, is_grayscale = False):
     if (is_grayscale):
         return scipy.misc.imread(path, flatten = True).astype(np.float)
     else:

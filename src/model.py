@@ -14,7 +14,7 @@ class ScaleGan(object):
         self.dataset_name = dataset_name
         self.batch_size = 1
         self.checkpoint_dir = './checkpoint'
-        self.img_dim = 1 # image file color channel
+        self.img_dim = 3 # image file color channel
         self.conv_dim = 64
         self.sess = sess
         self.img_size = img_size 
