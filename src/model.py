@@ -171,12 +171,12 @@ class ScaleGan(object):
         sample_images = np.array(sample).astype(np.float32)
         return sample_images
         
-    def sample_model(self, sample_dir, epoch, idx):
+    def sample_model(self, sample_dir, epoch):
         sample_images = self.load_random_samples()
         samples, d_loss, g_loss = self.sess.run(
             [self.fake_sample, self.d_loss[-1], self.g_loss[-1]], feed_dict={self.input_img: sample_images}
         )
-        save_images(samples, [self.batch_size, 1], './{}/train_{:02d}_{:04d}.png'.format(sample_dir, epoch, idx))
+        save_images(samples, [self.batch_size, 1], './{}/train_{:02d}.png'.format(sample_dir, epoch))
         print("[Sample] d_loss: {:.8f}, g_loss: {:.8f}".format(d_loss, g_loss))
     
     def train(self, args):
@@ -239,12 +239,11 @@ class ScaleGan(object):
                 counter += 1
                 print("Epoch: [%2d] [%4d/%4d] time: %4.4f, d_loss: [%s], g_loss: [%s]" \
                         % (epoch, idx, batch_idxs, time.time() - start_time, errD[:-1], errG[:-1]))
-                        
-                if np.mod(counter, 100) == 1:
-                    self.sample_model(args.sample_dir, epoch, idx)
-
                 if np.mod(counter, 500) == 2:
                     self.save(args.checkpoint_dir, counter)
+                        
+            self.sample_model(args.sample_dir, epoch)
+
 
     def discriminator(self, img, name, reuse=False):
         with tf.variable_scope(name):
