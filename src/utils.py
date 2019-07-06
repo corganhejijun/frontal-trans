@@ -61,8 +61,8 @@ def preprocess_A_and_B(img_A, img_B, fine_size, load_size, flip=True, is_test=Fa
 def get_image(image_path, image_size, is_crop=True, resize_w=64, is_grayscale = False):
     return transform(imread(image_path, is_grayscale), image_size, is_crop, resize_w)
 
-def save_images(images, size, image_path):
-    return imsave(inverse_transform(images), size, image_path)
+def save_images(images, image_path):
+    return imsave(inverse_transform(images), image_path)
 
 def imread(path, is_grayscale = False):
     if (is_grayscale):
@@ -83,8 +83,8 @@ def merge(images, size):
 
     return img
 
-def imsave(images, size, path):
-    return scipy.misc.imsave(path, merge(images, size))
+def imsave(images, path):
+    return scipy.misc.imsave(path, images)
 
 def transform(image, npx=64, is_crop=True, resize_w=64):
     # npx : # of pixels width/height of image
