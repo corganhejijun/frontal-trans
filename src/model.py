@@ -12,7 +12,7 @@ from .utils import *
 class ScaleGan(object):
     def __init__(self, sess, dataset_name, origin_size=64, img_size=256):
         self.dataset_name = dataset_name
-        self.batch_size = 1
+        self.batch_size = 10
         self.checkpoint_dir = './checkpoint'
         self.img_dim = 3 # image file color channel
         self.conv_dim = 64
