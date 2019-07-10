@@ -4,6 +4,7 @@ from glob import glob
 import os
 import time
 import numpy as np
+import random
 
 from .ops import *
 from .utils import *
@@ -11,7 +12,7 @@ from .utils import *
 class ScaleGan(object):
     def __init__(self, sess, dataset_name, origin_size=64, img_size=256):
         self.dataset_name = dataset_name
-        self.batch_size = 1
+        self.batch_size = 50
         self.checkpoint_dir = './checkpoint'
         self.img_dim = 3 # image file color channel
         self.conv_dim = 64
@@ -63,7 +64,6 @@ class ScaleGan(object):
         self.D_real_AB, self.D_real_AB_logits = self.discriminator(self.real_AB, name="discriminator")
         self.D_fake_AB, self.D_fake_AB_logits = self.discriminator(self.fake_AB, name="discriminator", reuse=True)
         self.D_both_BB, self.D_both_BB_logits = self.discriminator(self.both_BB, name="discriminator", reuse=True)
-        self.D_interpolate, self.D_interpolate_logits = self.discriminator(self.both_BB, name="discriminator")
 
         self.D_sum_real_AB = []
         for i in range(len(self.D_real_AB)):
@@ -108,9 +108,12 @@ class ScaleGan(object):
         for i in range(len(self.d_loss_real)):
             loss = tf.reduce_mean(self.D_fake_AB[i]) - tf.reduce_mean(self.D_real_AB[i])
             diff = self.fake_B[i] - self.real_B[i]
-            inter = self.real_B[i] * (tf.random_uniform(minival=0., maxval=1.)*diff)
-            _, d_logit = self.discriminator(inter, name="discriminator_interpolate")
-            gradient = tf.gradients(d_logit)
+            alpha = tf.random_uniform(
+                shape=[self.batch_size,self.fake_B[i].shape[1].value, self.fake_B[i].shape[2].value,1],
+                minval=0., maxval=1.)
+            inter = self.real_B[i] + (alpha*diff)
+            _, d_logit = self.discriminator([inter], name="discriminator_interpolate" + str(i))
+            gradient = tf.gradients(d_logit[0], [inter])[0]
             slop = tf.sqrt(tf.reduce_sum(tf.square(gradient), reduction_indices=[1]))
             gradient_penalty = tf.reduce_mean((slop-1.)**2)
             loss += self.LAMBDA*gradient_penalty
@@ -160,16 +163,16 @@ class ScaleGan(object):
 
     def load_random_samples(self):
         data = np.random.choice(glob('./datasets/{}/val/*.jpg'.format(self.dataset_name)), self.batch_size)
-        sample = [load_data(sample_file, self.img_size, self.img_size + 30) for sample_file in data]
+        sample = [load_data(sample_file, self.img_size, self.img_size + int(self.img_size/8)) for sample_file in data]
         sample_images = np.array(sample).astype(np.float32)
         return sample_images
         
-    def sample_model(self, sample_dir, epoch, idx):
+    def sample_model(self, sample_dir, epoch):
         sample_images = self.load_random_samples()
         samples, d_loss, g_loss = self.sess.run(
             [self.fake_sample, self.d_loss[-1], self.g_loss[-1]], feed_dict={self.input_img: sample_images}
         )
-        save_images(samples, [self.batch_size, 1], './{}/train_{:02d}_{:04d}.png'.format(sample_dir, epoch, idx))
+        save_merge_images(samples, [self.batch_size, 1], './{}/train_{:02d}.png'.format(sample_dir, epoch))
         print("[Sample] d_loss: {:.8f}, g_loss: {:.8f}".format(d_loss, g_loss))
     
     def train(self, args):
@@ -209,10 +212,11 @@ class ScaleGan(object):
             
         for epoch in range(args.epoch):
             data = glob('./datasets/{}/train/*.jpg'.format(self.dataset_name))
+            random.shuffle(data)
             batch_idxs = min(len(data), args.train_size) // self.batch_size
             for idx in range(0, batch_idxs):
                 batch_files = data[idx*self.batch_size:(idx+1)*self.batch_size]
-                batch = [load_data(batch_file, self.img_size, self.img_size+30) for batch_file in batch_files]
+                batch = [load_data(batch_file, self.img_size, self.img_size+int(self.img_size/8)) for batch_file in batch_files]
                 batch_images = np.array(batch).astype(np.float32)
                 for i in range(len(d_optim)):
                     _, summary_str = self.sess.run([d_optim[i], self.d_sum], feed_dict={self.input_img: batch_images})
@@ -231,12 +235,11 @@ class ScaleGan(object):
                 counter += 1
                 print("Epoch: [%2d] [%4d/%4d] time: %4.4f, d_loss: [%s], g_loss: [%s]" \
                         % (epoch, idx, batch_idxs, time.time() - start_time, errD[:-1], errG[:-1]))
-                        
-                if np.mod(counter, 100) == 1:
-                    self.sample_model(args.sample_dir, epoch, idx)
-
                 if np.mod(counter, 500) == 2:
                     self.save(args.checkpoint_dir, counter)
+                        
+            self.sample_model(args.sample_dir, epoch)
+
 
     def discriminator(self, img, name, reuse=False):
         with tf.variable_scope(name):
@@ -341,7 +344,7 @@ class ScaleGan(object):
             sample_files = sample_files_all[batch_count * max_size : endIdx]
             print("Loading testing images ... from {0} to {1} of total {2}".format(batch_count * max_size, endIdx, len(sample_files_all)))
             batch_count += 1
-            sample = [load_data(sample_file, self.img_size, self.img_size+30, is_test=True) for sample_file in sample_files]
+            sample = [load_data(sample_file, self.img_size, self.img_size+int(self.img_size/8), is_test=True) for sample_file in sample_files]
             sample_images = np.array(sample).astype(np.float32)
             sample_images = [sample_images[i:i+self.batch_size] for i in range(0, len(sample_images), self.batch_size)]
             sample_images = np.array(sample_images)
@@ -355,6 +358,8 @@ class ScaleGan(object):
             for i, sample_image in enumerate(sample_images):
                 idx = i
                 fileName = sample_files[idx].split('/')[-1].split('.jpg')[0]
-                print("sampling image {}, {} of total {}".format(fileName, idx + (batch_count - 1) * max_size, len(sample_files_all)))
+                print("sampling image {}, {} of total {}".format(fileName, idx + (batch_count - 1) * max_size, len(sample_files_all) // self.batch_size))
                 samples = self.sess.run(self.fake_sample, feed_dict={self.input_img: sample_image})
-                save_images(samples, [self.batch_size, 1], './{}/{}.png'.format(args.test_dir, fileName))
+                for j in range(self.batch_size):
+                    jdx = j+i*self.batch_size
+                    save_images(samples[j, :, :, :], './{}/{}.png'.format(args.test_dir, sample_files[jdx].split('/')[-1].split('.jpg')[0]))
