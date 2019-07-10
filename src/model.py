@@ -12,7 +12,7 @@ from .utils import *
 class ScaleGan(object):
     def __init__(self, sess, dataset_name, origin_size=64, img_size=256):
         self.dataset_name = dataset_name
-        self.batch_size = 1
+        self.batch_size = 50
         self.checkpoint_dir = './checkpoint'
         self.img_dim = 3 # image file color channel
         self.conv_dim = 64
@@ -171,12 +171,12 @@ class ScaleGan(object):
         sample_images = np.array(sample).astype(np.float32)
         return sample_images
         
-    def sample_model(self, sample_dir, epoch, idx):
+    def sample_model(self, sample_dir, epoch):
         sample_images = self.load_random_samples()
         samples, d_loss, g_loss = self.sess.run(
             [self.fake_sample, self.d_loss[-1], self.g_loss[-1]], feed_dict={self.input_img: sample_images}
         )
-        save_images(samples, [self.batch_size, 1], './{}/train_{:02d}_{:04d}.png'.format(sample_dir, epoch, idx))
+        save_merge_images(samples, [self.batch_size, 1], './{}/train_{:02d}.png'.format(sample_dir, epoch))
         print("[Sample] d_loss: {:.8f}, g_loss: {:.8f}".format(d_loss, g_loss))
     
     def train(self, args):
@@ -239,12 +239,11 @@ class ScaleGan(object):
                 counter += 1
                 print("Epoch: [%2d] [%4d/%4d] time: %4.4f, d_loss: [%s], g_loss: [%s]" \
                         % (epoch, idx, batch_idxs, time.time() - start_time, errD[:-1], errG[:-1]))
-                        
-                if np.mod(counter, 100) == 1:
-                    self.sample_model(args.sample_dir, epoch, idx)
-
                 if np.mod(counter, 500) == 2:
                     self.save(args.checkpoint_dir, counter)
+                        
+            self.sample_model(args.sample_dir, epoch)
+
 
     def discriminator(self, img, name, reuse=False):
         with tf.variable_scope(name):
@@ -363,6 +362,8 @@ class ScaleGan(object):
             for i, sample_image in enumerate(sample_images):
                 idx = i
                 fileName = sample_files[idx].split('/')[-1].split('.jpg')[0]
-                print("sampling image {}, {} of total {}".format(fileName, idx + (batch_count - 1) * max_size, len(sample_files_all)))
+                print("sampling image {}, {} of total {}".format(fileName, idx + (batch_count - 1) * max_size, len(sample_files_all) // self.batch_size))
                 samples = self.sess.run(self.fake_sample, feed_dict={self.input_img: sample_image})
-                save_images(samples, [self.batch_size, 1], './{}/{}.png'.format(args.test_dir, fileName))
+                for j in range(self.batch_size):
+                    jdx = j+i*self.batch_size
+                    save_images(samples[j, :, :, :], './{}/{}.png'.format(args.test_dir, sample_files[jdx].split('/')[-1].split('.jpg')[0]))

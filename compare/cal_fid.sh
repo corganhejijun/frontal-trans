@@ -1,0 +1,1 @@
+CUDA_VISIBLE_DEVICES=1, python fid_score.py ../datasets/celeb_64/gt/ ../test

@@ -90,7 +90,7 @@ def linear(input_, output_size, scope=None, stddev=0.02, bias_start=0.0, with_w=
             
 def residual_block(input_d, size, type):
     rb = input_d
-    rbCount = 2
+    rbCount = 4
     for i in range(rbCount):
         rb = conv2d(rb, input_d.shape[-1].value, d_h=1, d_w=1, name='g_rb_' + str(size) + '_conv_rb' + str(type) + '_' + str(i))
         rb = batch_norm(rb, name="g_rb_bn_" + str(size) + "_" + str(type) + "_" + str(i))
@@ -99,7 +99,7 @@ def residual_block(input_d, size, type):
     return tf.nn.relu(rb_sum)
 
 def multi_residual_block(input_d, size):
-    rbCount = 1
+    rbCount = 2
     rb = input_d
     for i in range(rbCount):
         rb = residual_block(rb, size, i)
