@@ -19,6 +19,7 @@ class ScaleGan(object):
         self.sess = sess
         self.img_size = img_size 
         self.L1_lambda = 100
+        self.LAMBDA = 10 # Gradient penalty lambda hyperparameter
         self.origin_size = origin_size
         self.build_model()
 
