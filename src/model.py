@@ -101,7 +101,11 @@ class ScaleGan(object):
                         tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_AB_logits[i], labels=tf.ones_like(self.D_fake_AB[i])))
                 )
             else:
-                self.g_loss.append(-tf.reduce_mean(self.D_fake_AB[i]))
+                self.g_loss.append(
+                    self.L1_lambda * tf.reduce_mean(tf.abs(self.real_B[i] - self.fake_B[i]))
+                    + tf.reduce_mean(
+                        tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_AB_logits[i], labels=tf.ones_like(self.D_fake_AB[i])))
+                )
         
         self.d_loss_real_sum = []
         for i in range(len(self.d_loss_real)):
@@ -118,19 +122,7 @@ class ScaleGan(object):
             if i == 0:
                 self.d_loss.append(self.d_loss_real[i] + self.d_loss_fake[i] + self.d_loss_both[i])
             else:
-                loss = tf.reduce_mean(self.D_fake_AB[i]) - tf.reduce_mean(self.D_real_AB[i])
-                diff = self.fake_B[i] - self.real_B[i]
-                alpha = tf.random_uniform(
-                    shape=[self.batch_size,self.fake_B[i].shape[1].value, self.fake_B[i].shape[2].value,1],
-                    minval=0., maxval=1.)
-                inter = self.real_B[i] + (alpha*diff)
-                _, d_logit = self.discriminator([inter], name="discriminator_interpolate" + str(i))
-                gradient = tf.gradients(d_logit[0], [inter])[0]
-                slop = tf.sqrt(tf.reduce_sum(tf.square(gradient), reduction_indices=[1]))
-                gradient_penalty = tf.reduce_mean((slop-1.)**2)
-                loss += self.LAMBDA*gradient_penalty
-                self.d_loss.append(loss)
-
+                self.d_loss.append(self.d_loss_real[i] + self.d_loss_fake[i])
         self.d_loss_sum = []
         for i in range(len(self.d_loss)):
             self.d_loss_sum.append(tf.summary.scalar("d_loss_" + str(i), self.d_loss[i]))
