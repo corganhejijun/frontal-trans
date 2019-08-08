@@ -5,7 +5,7 @@ from scipy import misc
 from PIL import Image
 
 FILE_PATH = "datalist_gopro.txt"
-DATASET_PATH = "~/git/SRN-Deblur/training_set/GOPRO_Large/train"
+DATASET_PATH = "../SRN-Deblur/training_set/GOPRO_Large/train"
 DEST_SIZE = 128
 DEST_PATH = "datasets/gopro"
 
@@ -15,6 +15,7 @@ if not os.path.isdir(DEST_PATH):
 file = open(FILE_PATH, "r")
 line = file.readline()
 while len(line) > 0:
+    print("processing " + line)
     filenames = line.split()
     fileSharp = os.path.join(DATASET_PATH, filenames[0])
     fileBlur = os.path.join(DATASET_PATH, filenames[1])
