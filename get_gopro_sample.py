@@ -25,15 +25,16 @@ while len(line) > 0:
     while x < len(imgSharp[0]):
         y = 0
         while y < len(imgSharp):
-            y += DEST_SIZE
             imgA = imgSharp[y: y+DEST_SIZE, x : x+DEST_SIZE, :]
             imgB = imgBlur[y: y+DEST_SIZE, x : x+DEST_SIZE, :]
             img = Image.new('RGB', (DEST_SIZE*2, DEST_SIZE))
             img.paste(Image.fromarray(imgA), (0,0))
             img.paste(Image.fromarray(imgB), (DEST_SIZE+1, 0))
             def getFileName(oldName):
-                return oldName.replace('/', '_')[-4] + '_' + str(x) + '_' + str(y) + '.png'
-            misc.imsave(os.path.join(DEST_PATH, getFileName(fileSharp)), img)
+                return oldName.replace('/', '_')[:-5] + '_' + str(x) + '_' + str(y) + '.png'
+            name = os.path.join(DEST_PATH, getFileName(filenames[0]))
+            misc.imsave(name, img)
+            y += DEST_SIZE
         x += DEST_SIZE
     line = file.readline()
 file.close()
