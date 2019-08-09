@@ -34,6 +34,7 @@ while len(line) > 0:
                 return oldName.replace('/', '_')[:-5] + '_' + str(x) + '_' + str(y) + '.png'
             name = os.path.join(DEST_PATH, getFileName(filenames[0]))
             misc.imsave(name, img)
+            print(name + " file saved")
             y += DEST_SIZE
         x += DEST_SIZE
     line = file.readline()
