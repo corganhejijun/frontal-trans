@@ -20,6 +20,7 @@ class ScaleGan(object):
         self.sess = sess
         self.img_size = img_size 
         self.L1_lambda = 100
+        self.L2_lambda = 100
         self.LAMBDA = 10 # Gradient penalty lambda hyperparameter
         self.origin_size = origin_size
         self.direction = direction
@@ -112,6 +113,7 @@ class ScaleGan(object):
                     self.L1_lambda * tf.reduce_mean(tf.abs(self.real_B[i] - self.fake_B[i]))
                     + tf.reduce_mean(
                         tf.nn.sigmoid_cross_entropy_with_logits(logits=self.D_fake_AB_logits[i], labels=tf.ones_like(self.D_fake_AB[i])))
+                    + self.L2_lambda * tf.reduce_mean((self.real_B[i] - self.fake_B[i])**2)
                 )
         
         self.d_loss_real_sum = []
