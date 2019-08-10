@@ -17,6 +17,9 @@ parser.add_argument('--sample_dir', dest='sample_dir', default='./sample', help=
 parser.add_argument('--test_dir', dest='test_dir', default='./test', help='test sample are saved here')
 parser.add_argument('--origin_size', dest='origin_size', type=int, default=64, help='original image size')
 parser.add_argument('--image_size', dest='image_size', type=int, default=256, help='image size')
+parser.add_argument('--batch_size', dest='batch_size', type=int, default=50, help='batch size')
+parser.add_argument('--direction', dest='direction', default='AtoB', help='AtoB or BtoA transform')
+parser.add_argument('--ext', dest='ext', default='.jpg', help='.jpg or .png file ext')
 
 args = parser.parse_args()
 
@@ -29,8 +32,9 @@ def main(_):
         os.makedirs(args.test_dir)
         
     with tf.Session() as sess:
-        model = ScaleGan(sess, dataset_name=args.dataset_name,
-                        origin_size=args.origin_size, img_size=args.image_size)
+        model = ScaleGan(sess, dataset_name=args.dataset_name, checkpoint_dir=args.checkpoint_dir,
+                        origin_size=args.origin_size, img_size=args.image_size, ext=args.ext,
+                        batch_size=args.batch_size, direction=args.direction)
 
         if args.phase == 'train':
             model.train(args)

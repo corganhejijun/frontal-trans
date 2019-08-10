@@ -10,10 +10,11 @@ from .ops import *
 from .utils import *
 
 class ScaleGan(object):
-    def __init__(self, sess, dataset_name, origin_size=64, img_size=256):
+    def __init__(self, sess, dataset_name, origin_size=64, img_size=256, ext='.jpg',
+                    batch_size=64, direction='AtoB', checkpoint_dir='./checkpoint'):
         self.dataset_name = dataset_name
-        self.batch_size = 50
-        self.checkpoint_dir = './checkpoint'
+        self.batch_size = batch_size
+        self.checkpoint_dir = checkpoint_dir
         self.img_dim = 3 # image file color channel
         self.conv_dim = 64
         self.sess = sess
@@ -21,6 +22,8 @@ class ScaleGan(object):
         self.L1_lambda = 100
         self.LAMBDA = 10 # Gradient penalty lambda hyperparameter
         self.origin_size = origin_size
+        self.direction = direction
+        self.ext = ext
         self.build_model()
 
     def build_model(self):
@@ -36,14 +39,18 @@ class ScaleGan(object):
             print("size error when building model. origin size is " 
                     + str(self.origin_size) + " and target image size is " + str(self.img_size))
             return
-        # A is sample, B is ground truth, 
+        # A is sample, B is ground truth 
         self.real_A = []
         A = self.input_img[:, :, :, :self.img_dim]
+        B = self.input_img[:, :, :, self.img_dim:2*self.img_dim]
+        if self.direction == 'BtoA':
+            tmp = A
+            B = tmp
+            A = B
         for size in sizes:
             self.real_A.append(tf.image.resize_images(A, (size, size)))
         self.real_A.append(A)
         self.real_B = []
-        B = self.input_img[:, :, :, self.img_dim:2*self.img_dim]
         for size in sizes:
             self.real_B.append(tf.image.resize_images(B, (size, size)))
         self.real_B.append(B)
@@ -167,7 +174,7 @@ class ScaleGan(object):
         self.saver.save(self.sess, os.path.join(checkpoint_dir, model_name), global_step=step)
 
     def load_random_samples(self):
-        data = np.random.choice(glob('./datasets/{}/val/*.jpg'.format(self.dataset_name)), self.batch_size)
+        data = np.random.choice(glob(('./datasets/{}/val/*' + self.ext).format(self.dataset_name)), self.batch_size)
         sample = [load_data(sample_file, self.img_size, self.img_size + int(self.img_size/8)) for sample_file in data]
         sample_images = np.array(sample).astype(np.float32)
         return sample_images
@@ -216,7 +223,7 @@ class ScaleGan(object):
             print(" [!] Load failed...")
             
         for epoch in range(args.epoch):
-            data = glob('./datasets/{}/train/*.jpg'.format(self.dataset_name))
+            data = glob(('./datasets/{}/train/*' + self.ext).format(self.dataset_name))
             random.shuffle(data)
             batch_idxs = min(len(data), args.train_size) // self.batch_size
             for idx in range(0, batch_idxs):
@@ -338,7 +345,7 @@ class ScaleGan(object):
     def test(self, args):
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
-        sample_files_all = glob('./datasets/{}/val_test/*.jpg'.format(self.dataset_name))
+        sample_files_all = glob(('./datasets/{}/val_test/*' + self.ext).format(self.dataset_name))
         
         max_size = 10000
         batch_count = 0
@@ -362,7 +369,7 @@ class ScaleGan(object):
 
             for i, sample_image in enumerate(sample_images):
                 idx = i
-                fileName = sample_files[idx].split('/')[-1].split('.jpg')[0]
+                fileName = sample_files[idx].split('/')[-1].split(self.ext)[0]
                 print("sampling image {}, {} of total {}".format(fileName, idx + (batch_count - 1) * max_size, len(sample_files_all) // self.batch_size))
                 samples = self.sess.run(self.fake_sample, feed_dict={self.input_img: sample_image})
                 for j in range(self.batch_size):
