@@ -25,8 +25,8 @@ while len(line) > 0:
     while x < len(imgSharp[0]):
         y = 0
         while y < len(imgSharp):
-            imgA = imgSharp[y: y+DEST_SIZE, x : x+DEST_SIZE, :]
-            imgB = imgBlur[y: y+DEST_SIZE, x : x+DEST_SIZE, :]
+            imgA = imgBlur[y: y+DEST_SIZE, x : x+DEST_SIZE, :]
+            imgB = imgSharp[y: y+DEST_SIZE, x : x+DEST_SIZE, :]
             img = Image.new('RGB', (DEST_SIZE*2, DEST_SIZE))
             img.paste(Image.fromarray(imgA), (0,0))
             img.paste(Image.fromarray(imgB), (DEST_SIZE+1, 0))
