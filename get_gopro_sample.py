@@ -31,7 +31,7 @@ while len(line) > 0:
             img.paste(Image.fromarray(imgA), (0,0))
             img.paste(Image.fromarray(imgB), (DEST_SIZE+1, 0))
             def getFileName(oldName):
-                return oldName.replace('/', '_')[:-5] + '_' + str(x) + '_' + str(y) + '.png'
+                return oldName.replace('/', '_')[:-4] + '_' + str(x) + '_' + str(y) + '.png'
             name = os.path.join(DEST_PATH, getFileName(filenames[0]))
             misc.imsave(name, img)
             print(name + " file saved")
