@@ -12,7 +12,7 @@ if not os.path.isdir(target_path):
 fileList = os.listdir(test_path)
 fileList.sort()
 
-for index, file in fileList:
+for index, file in enumerate(fileList):
   print('processing ' + file + ' ' + str(index) +  ' of total ' + str(len(fileList)))
   # file name format: 'GOPR0410_11_00_sharp_000118_768_128.png'
   file_pre_name = file[:27]
