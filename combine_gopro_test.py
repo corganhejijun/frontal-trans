@@ -21,7 +21,7 @@ for index, file in enumerate(fileList):
   x = int(sizeStrs[0])
   y = int(sizeStrs[1])
   target_name = os.path.join(target_path, file_pre_name + ext)
-  fileImg = Image.open(os.path.join(test_path, target_name))
+  fileImg = Image.open(os.path.join(test_path, file))
   img = None
   if os.path.isfile(target_name):
     img = Image.open(target_name)
