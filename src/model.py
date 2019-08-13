@@ -176,7 +176,7 @@ class ScaleGan(object):
         self.saver.save(self.sess, os.path.join(checkpoint_dir, model_name), global_step=step)
 
     def load_random_samples(self):
-        data = np.random.choice(glob(('./datasets/{}/val/*' + self.ext).format(self.dataset_name)), self.batch_size)
+        data = np.random.choice(glob('./datasets/{}/val/*'.format(self.dataset_name) + self.ext), self.batch_size)
         sample = [load_data(sample_file, self.img_size, self.img_size + int(self.img_size/8)) for sample_file in data]
         sample_images = np.array(sample).astype(np.float32)
         return sample_images
@@ -186,7 +186,7 @@ class ScaleGan(object):
         samples, d_loss, g_loss = self.sess.run(
             [self.fake_sample, self.d_loss[-1], self.g_loss[-1]], feed_dict={self.input_img: sample_images}
         )
-        save_merge_images(samples, [self.batch_size, 1], './{}/train_{:02d}.png'.format(sample_dir, epoch))
+        save_merge_images(samples, [self.batch_size, 1], './{}/train_{:02d}'.format(sample_dir, epoch) + self.ext)
         print("[Sample] d_loss: {:.8f}, g_loss: {:.8f}".format(d_loss, g_loss))
     
     def train(self, args):
@@ -225,7 +225,7 @@ class ScaleGan(object):
             print(" [!] Load failed...")
             
         for epoch in range(args.epoch):
-            data = glob(('./datasets/{}/train/*' + self.ext).format(self.dataset_name))
+            data = glob('./datasets/{}/train/*'.format(self.dataset_name) + self.ext)
             random.shuffle(data)
             batch_idxs = min(len(data), args.train_size) // self.batch_size
             for idx in range(0, batch_idxs):
@@ -347,7 +347,7 @@ class ScaleGan(object):
     def test(self, args):
         init_op = tf.global_variables_initializer()
         self.sess.run(init_op)
-        sample_files_all = glob(('./datasets/{}/val_test/*' + self.ext).format(self.dataset_name))
+        sample_files_all = glob('./datasets/{}/val_test/*'.format(self.dataset_name) + self.ext)
         
         max_size = 10000
         batch_count = 0
@@ -371,9 +371,9 @@ class ScaleGan(object):
 
             for i, sample_image in enumerate(sample_images):
                 idx = i
-                fileName = sample_files[idx].split('/')[-1].split(self.ext)[0]
+                fileName = sample_files[idx].split('/')[-1]
                 print("sampling image {}, {} of total {}".format(fileName, idx + (batch_count - 1) * max_size, len(sample_files_all) // self.batch_size))
                 samples = self.sess.run(self.fake_sample, feed_dict={self.input_img: sample_image})
                 for j in range(self.batch_size):
                     jdx = j+i*self.batch_size
-                    save_images(samples[j, :, :, :], './{}/{}.png'.format(args.test_dir, sample_files[jdx].split('/')[-1].split('.jpg')[0]))
+                    save_images(samples[j, :, :, :], './{}/{}'.format(args.test_dir, sample_files[jdx].split('/')[-1]))
