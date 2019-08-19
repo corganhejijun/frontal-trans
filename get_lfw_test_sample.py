@@ -18,6 +18,8 @@ lfw_list = os.listdir(sample_path)
 for index, subFolder in enumerate(lfw_list):
     print("procesing " + subFolder + " " + str(index+1) + '/' + str(len(lfw_list)))
     fileList = os.listdir(os.path.join(sample_path, subFolder))
+    if len(fileList) < 2:
+        continue
     for file in fileList:
         imgPath = os.path.join(sample_path, subFolder, file)
         if os.path.isdir(imgPath):
