@@ -23,6 +23,7 @@ for index, subFolder in enumerate(lfw_list):
         if os.path.isdir(imgPath):
             continue
         imgB = cv2.cvtColor(cv2.imread(imgPath), cv2.COLOR_BGR2RGB)
+        imgB = misc.imresize(imgB, (imgSize, imgSize), interp='bilinear')
         imgA = misc.imresize(imgB, (middleSize, middleSize), interp='bilinear')
         imgA = misc.imresize(imgA, (imgSize, imgSize), interp='bilinear')
         combineImg = Image.new('RGB', (imgSize*2, imgSize))
