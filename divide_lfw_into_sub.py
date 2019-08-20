@@ -16,4 +16,4 @@ for index, file in enumerate(fileList):
   subFolderPath = os.path.join(dest_path, subFolderName)
   os.mkdir(subFolderPath)
   os.rename(os.path.join(lfw_data_path, file), os.path.join(subFolderPath, file))
-  os.rename(os.path.join(gt_path, file), os.path.join(subFolderName, file[:-4] + '_gt' + file[-4:]))
+  os.rename(os.path.join(gt_path, file), os.path.join(subFolderPath, file[:-4] + '_gt' + file[-4:]))
